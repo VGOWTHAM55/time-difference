@@ -1,32 +1,60 @@
-// index.js
-// where your node app starts
+const express = require("express");
+const cors = require("cors");
 
-// init project
-var express = require('express');
-var app = express();
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
-// so that your API is remotely testable by FCC 
-var cors = require('cors');
-app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
+app.use(cors());
 
-// http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'));
+function parseDate(input) {
+  if (!input) return new Date();
+  return isNaN(input) ? new Date(input) : new Date(parseInt(input));
+}
 
-// http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + '/views/index.html');
+function getDiff(start, end) {
+  let diffMs = Math.abs(end - start);
+
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  diffMs -= days * 24 * 60 * 60 * 1000;
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  diffMs -= hours * 60 * 60 * 1000;
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  diffMs -= minutes * 60 * 1000;
+
+  const seconds = Math.floor(diffMs / 1000);
+
+  return {
+    milliseconds: Math.abs(end - start),
+    days,
+    hours,
+    minutes,
+    seconds,
+  };
+}
+
+
+
+app.get("/api/diff", (req, res) => {
+  const { start: startParam, end: endParam } = req.query;
+
+  const startDate = parseDate(startParam);
+  const endDate = parseDate(endParam);
+
+  if (startDate.toString() === "Invalid Date" || endDate.toString() === "Invalid Date") {
+    return res.json({ error: "Invalid Date" });
+  }
+
+  const diff = getDiff(startDate, endDate);
+
+  res.json({
+    start: startDate.toUTCString(),
+    end: endDate.toUTCString(),
+    difference: diff
+  });
 });
 
-
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
-});
-
-
-
-// Listen on port set in environment variable or default to 3000
-var listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+app.listen(PORT, () => {
+  console.log(`Time Difference Microservice listening on port ${PORT}`);
 });
