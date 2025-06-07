@@ -1,60 +1,43 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
 
-function parseDate(input) {
-  if (!input) return new Date();
-  return isNaN(input) ? new Date(input) : new Date(parseInt(input));
-}
+// ✅ Serve static files (like CSS) from "public"
+app.use(express.static(path.join(__dirname, "public")));
 
-function getDiff(start, end) {
-  let diffMs = Math.abs(end - start);
+// ✅ Serve the HTML file from "views/index.html"
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
 
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  diffMs -= days * 24 * 60 * 60 * 1000;
+// ✅ Timestamp API
+app.get("/api/:date?", (req, res) => {
+  const dateString = req.params.date;
+  let date;
 
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  diffMs -= hours * 60 * 60 * 1000;
+  if (!dateString) {
+    date = new Date();
+  } else if (/^\d+$/.test(dateString)) {
+    date = new Date(parseInt(dateString));
+  } else {
+    date = new Date(dateString);
+  }
 
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  diffMs -= minutes * 60 * 1000;
-
-  const seconds = Math.floor(diffMs / 1000);
-
-  return {
-    milliseconds: Math.abs(end - start),
-    days,
-    hours,
-    minutes,
-    seconds,
-  };
-}
-
-
-
-app.get("/api/diff", (req, res) => {
-  const { start: startParam, end: endParam } = req.query;
-
-  const startDate = parseDate(startParam);
-  const endDate = parseDate(endParam);
-
-  if (startDate.toString() === "Invalid Date" || endDate.toString() === "Invalid Date") {
+  if (date.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  const diff = getDiff(startDate, endDate);
-
   res.json({
-    start: startDate.toUTCString(),
-    end: endDate.toUTCString(),
-    difference: diff
+    unix: date.getTime(),
+    utc: date.toUTCString(),
   });
 });
 
+// ✅ Start the server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Time Difference Microservice listening on port ${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

@@ -3,166 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Time Difference Microservice</title>
-
-  <!-- Google Fonts: Poppins -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome CDN for icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-p0H42hXKp5e6PEzEjwr28mz3xqDJ98/9Ig2npdMjY57kElqUt7+yZ/c3NkeB5DZ+9pKk1Q74md/i9t0W3F5dIg=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
-
+  <title>Timestamp Microservice</title>
   <style>
     body {
-      font-family: 'Poppins', Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      color: white;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f4f6f8;
+      color: #333;
     }
-
-    .container {
-      max-width: 750px;
-      margin: 0 auto;
-      background-color: rgba(0, 0, 0, 0.45);
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 300px;
+      max-width: 100%;
     }
-
-    h1 {
-      color: #fff;
-      text-align: center;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
-      font-weight: 600;
-      margin-bottom: 30px;
-      font-size: 2.8rem;
-      letter-spacing: 1px;
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      margin-top: 20px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #f0f0f0;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      gap: 8px;
-    }
-
-    input {
-      padding: 12px;
-      width: 100%;
-      margin-top: 8px;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      font-family: 'Poppins', Arial, sans-serif;
-      font-weight: 400;
-    }
-
     button {
-      margin-top: 30px;
-      padding: 14px 25px;
-      background-color: #007bfccc;
+      cursor: pointer;
+      background-color: #007bfc;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 1.25rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,123,252,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      max-width: 220px;
-      margin-left: auto;
-      margin-right: auto;
+      border-radius: 4px;
     }
-
-    button:hover {
-      background-color: #005bb5cc;
-    }
-
     pre {
-      background: rgba(0,0,0,0.6);
-      padding: 18px;
-      border-radius: 10px;
+      background: #ddd;
+      padding: 15px;
+      border-radius: 6px;
+      max-width: 600px;
       white-space: pre-wrap;
-      margin-top: 30px;
-      max-width: 700px;
-      overflow-x: auto;
-      box-shadow: 0 0 15px rgba(0,0,0,0.7);
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 1rem;
-      color: #ddd;
-    }
-
-    /* Icon styling */
-    .fa-calendar-alt,
-    .fa-hourglass-start,
-    .fa-hourglass-end,
-    .fa-clock {
-      color: #69b3ff;
-      font-size: 1.2rem;
+      word-wrap: break-word;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1><i class="fas fa-clock"></i> Time Difference Microservice</h1>
+  <h1>Timestamp Microservice</h1>
+  <input
+    type="text"
+    id="dateInput"
+    placeholder="Enter date (ISO format or UNIX timestamp) or leave empty"
+  />
+  <br />
+  <button onclick="fetchTimestamp()">Get Timestamp</button>
 
-    <label for="start"><i class="fas fa-hourglass-start"></i> Start Date (ISO or UNIX):</label>
-    <input type="text" id="start" placeholder="e.g. 2025-01-01 or 1672531200000" />
-
-    <label for="end"><i class="fas fa-hourglass-end"></i> End Date (ISO or UNIX):</label>
-    <input type="text" id="end" placeholder="e.g. 2025-06-01 or 1672617600000" />
-
-    <button onclick="getTimeDifference()">
-      <i class="fas fa-calculator"></i> Calculate Difference
-    </button>
-
-    <h2>Response</h2>
-    <pre id="result">Waiting for input...</pre>
-  </div>
+  <h2>Result:</h2>
+  <pre id="result">Waiting for input...</pre>
 
   <script>
-    function addZIfNeeded(input) {
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(input)) {
-        return input + "Z";
-      }
-      return input;
-    }
-
-    async function getTimeDifference() {
-      let start = document.getElementById("start").value.trim();
-      let end = document.getElementById("end").value.trim();
-
-      start = addZIfNeeded(start);
-      end = addZIfNeeded(end);
-
-      let url = "http://localhost:3000/api/diff?";
-      if (start) url += `start=${encodeURIComponent(start)}&`;
-      if (end) url += `end=${encodeURIComponent(end)}`;
+    async function fetchTimestamp() {
+      const date = document.getElementById("dateInput").value.trim();
+      const url = `http://localhost:3000/api/${date || ""}`;
 
       try {
-        const res = await fetch(url);
-        const data = await res.json();
+        const response = await fetch(url);
+        const data = await response.json();
         document.getElementById("result").textContent = JSON.stringify(data, null, 2);
       } catch (err) {
         document.getElementById("result").textContent = "Error fetching data.";
